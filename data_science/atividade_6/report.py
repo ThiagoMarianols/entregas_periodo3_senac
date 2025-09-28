@@ -51,7 +51,7 @@ print('Shapiro age_surv:', shapiro(age_surv))
 print('Shapiro age_nosurv:', shapiro(age_nosurv))
 
 t, p = ttest_ind(age_surv, age_nosurv, equal_var=False)
-print('Teste t idade sobreviventes vs não: t=%.3f p=%.3f' % (t,p))
+print('Teste t idade sobreviventes vs não sobreviventes: t=%.3f p=%.3f' % (t,p))
 
 numeric_cols = ['Age', 'Fare']
 df_numeric = df[numeric_cols].dropna()
