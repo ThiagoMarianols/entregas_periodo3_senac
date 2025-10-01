@@ -10,7 +10,7 @@ const historyDiv = document.getElementById("history");
 let currentLocation = "";
 let activeStream = null; // mantém a referência para parar a câmera após capturar
 
-// --- PEGAR LOCALIZAÇÃO ---
+// PEGAR LOCALIZAÇÃO
 if (btnLocal) {
   btnLocal.addEventListener("click", () => {
     if (!navigator.geolocation) {
@@ -18,7 +18,7 @@ if (btnLocal) {
       return;
     }
 
-    // feedback de carregamento
+    // mostra que tá carregando a localização
     if (locationEl) {
       locationEl.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Obtendo localização...`;
     }
