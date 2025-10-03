@@ -106,6 +106,20 @@ if (btnCapture) {
     // salvar e atualizar galeria
     saveMoment(imgData, currentLocation);
     loadHistory();
+
+    // limpar prévia para permitir nova captura
+    try {
+      if (photo) {
+        photo.removeAttribute("src");
+      }
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.add("d-none");
+      }
+    } catch (e) {
+      console.warn("Falha ao limpar prévia:", e);
+    }
   });
 }
 
@@ -124,20 +138,29 @@ function saveMoment(photo, location) {
 function loadHistory() {
   if (!historyDiv) return; // só renderiza quando existir o container (Galeria.html)
   const momentos = JSON.parse(localStorage.getItem("momentos") || "[]");
-  historyDiv.innerHTML = "";
-  momentos.forEach((m) => {
-    historyDiv.innerHTML += `
+  let html = "";
+  if (momentos.length > 0) {
+    html += `
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-outline-danger btn-sm" id="btn-clear-all">Apagar todas</button>
+      </div>
+    `;
+  }
+  momentos.forEach((m, i) => {
+    html += `
       <div class="col-12 col-md-4 mb-3">
         <div class="card">
           <img src="${m.photo}" class="card-img-top"/>
           <div class="card-body">
             <p class="card-text"><strong>Local:</strong> ${m.location || "Não informado"}</p>
             <p class="card-text"><small>${m.date}</small></p>
+            <button class="btn btn-sm btn-outline-danger w-100 mt-2 btn-delete" data-index="${i}">Apagar</button>
           </div>
         </div>
       </div>
     `;
   });
+  historyDiv.innerHTML = html;
 }
 
 // Atualiza a galeria automaticamente quando o localStorage mudar (ex.: foto salva no index)
@@ -149,5 +172,40 @@ window.addEventListener("storage", (e) => {
 
 // carrega histórico ao abrir (apenas na Galeria)
 if (historyDiv) {
+  loadHistory();
+}
+
+// --- AÇÕES DA GALERIA (delegação de eventos) ---
+if (historyDiv) {
+  historyDiv.addEventListener("click", (ev) => {
+    const delBtn = ev.target.closest && ev.target.closest(".btn-delete");
+    if (delBtn) {
+      const idx = Number(delBtn.getAttribute("data-index"));
+      if (!Number.isNaN(idx)) {
+        const ok = confirm("Apagar esta foto?");
+        if (ok) deleteMomentAt(idx);
+      }
+      return;
+    }
+
+    const clearAllBtn = ev.target.closest && ev.target.closest("#btn-clear-all");
+    if (clearAllBtn) {
+      const ok = confirm("Apagar todas as fotos?");
+      if (ok) clearAllMoments();
+      return;
+    }
+  });
+}
+
+function deleteMomentAt(index) {
+  const momentos = JSON.parse(localStorage.getItem("momentos") || "[]");
+  if (index < 0 || index >= momentos.length) return;
+  momentos.splice(index, 1);
+  localStorage.setItem("momentos", JSON.stringify(momentos));
+  loadHistory();
+}
+
+function clearAllMoments() {
+  localStorage.removeItem("momentos");
   loadHistory();
 }
